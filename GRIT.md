@@ -18,8 +18,35 @@
 - Every commit is created on a dedicated work branch — never on the default branch
 - Commits follow Conventional Commits, one logical change per commit
 - Work branches follow the recorded branch format exactly
+- Every editing session is bracketed by two passes: Read Before Editing first, Update After Editing before the task counts as done
 - If `## State` shows `status: uninitialized`, run INIT before any write operation (branch, commit, merge, push)
 - Do not rely on memory of previous sessions. Re-read this file and `## State` at the start of every session that touches git
+
+## Read Before Editing
+
+Run before touching any file in the working tree:
+
+1. Re-read this file and `## State`. If `status: uninitialized`, run INIT first
+2. `git status` — know the current branch and the working tree state
+3. On the default branch? NEVER edit there. Create or switch to the correct work branch first (see Branches — or RECOVER if changes already exist)
+4. Uncommitted changes left over from an unrelated task? ASK: commit them on their own branch, stash them, or (with approval) discard them — never mix them into new work
+5. If a remote exists: `git fetch origin`, start new branches from `origin/<default_branch>`, and if the current work branch is behind its upstream, sync it first (`git pull --ff-only`)
+6. Confirm the current branch name still matches the task at hand. If the scope changed, start a new branch
+7. `git log --oneline -5` — see where the branch left off before adding to it
+
+Do not rely on memory. Run this pass at the start of every editing session, even mid-conversation.
+
+## Update After Editing
+
+Every meaningful change requires a git pass before the task is done:
+
+1. Review what changed: `git status` and `git diff --stat`
+2. Group the changes into logical units — one unit, one commit (`git add -p` when files mix concerns)
+3. Run CHECK, then commit each unit with a Conventional Commit message
+4. Push the work branch if `push_branches: auto` and a remote exists
+5. If any recorded fact changed (remote URL, default branch renamed, project code), update `## State` via RECONFIGURE
+6. NEVER end a task with meaningful work sitting uncommitted. Scratch or exploratory changes may be left out or discarded, but the pass must still run and the decision must be reported
+7. Finish with Closeout
 
 ## INIT
 
@@ -44,7 +71,7 @@ Run when the user says `init`, `grit init`, or `initialize grit` — and automat
 <!-- Written by INIT. Agents change values here only via INIT or RECONFIGURE. Never edit the rules in this file unless the user asks. -->
 
 ```yaml
-grit: 1
+grit: 1.1
 status: uninitialized            # uninitialized | ready
 remote_url: null                 # e.g. git@github.com:ksoftm/husk-mail.git | none
 default_branch: null             # e.g. main — never assumed, always detected or user-confirmed
