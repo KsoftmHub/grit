@@ -15,6 +15,7 @@ The agent treats `GRIT.md` as a binding contract for every git operation:
 - commits follow **Conventional Commits** (`feat:` `fix:` `chore:` `docs:` `refactor:` …), one logical change per commit
 - if a **remote exists**, work branches are pushed automatically; the default branch is only updated through a PR or a user-approved merge
 - the file carries its own **memory**: a `## State` block records the remote URL, the detected default branch, the project code, and the policies — so the agent never guesses twice
+- every task is bracketed by **Read Before Editing** and **Update After Editing** passes — branch, sync, and leftover-work checks before any file is touched; commit, push, and report before the task counts as done
 
 ## How to use
 
@@ -50,6 +51,7 @@ From then on, every branch, commit, and push follows the contract automatically.
 | Panic when something goes wrong | A **RECOVER** section with self-healing steps for the four most common mistakes |
 | Implicit danger zones | An explicit **Forbidden** list of hard stops (force-push, history rewrite, `--no-verify`, destroying unmerged work, …) |
 | Silent drift | **RECONFIGURE** and **Closeout** procedures keep the recorded state and the report honest |
+| Edits start anywhere, end with loose files | **Read/Update passes** bracket every task: right branch and synced before editing, committed and pushed after |
 
 ## Configuration
 
@@ -62,6 +64,11 @@ All knobs live in the `## State` block of `GRIT.md`:
 | `branch_granularity` | `per-task` (default) / `per-commit` | One branch per unit of work, or strictly one branch per commit |
 | `push_branches` | `auto` (default) / `manual` | Push the work branch after each commit when a remote exists |
 | `default_branch_updates` | `pr-only` (default) / `merge-on-approval` | How work is allowed to land on the default branch |
+
+## Changelog
+
+- **1.1** — Read Before Editing & Update After Editing: DOX-style pre/post passes, applied to git. Before any file is touched the agent verifies branch, sync state, and leftover work; after editing, every meaningful change must be committed, pushed, and reported before the task is done.
+- **1.0** — Initial contract: protected default branch, Conventional Commits, universal branch format, INIT detection ladder, self-recording State, CHECK, RECOVER, Forbidden list.
 
 ## Credits
 
